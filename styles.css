@@ -1,0 +1,84 @@
+:root {
+  color-scheme: dark;
+  --bg: #0b1020;
+  --panel: #111a33;
+  --panel-border: #233156;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: radial-gradient(circle at top, #172554, var(--bg));
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.app {
+  width: min(1100px, 95vw);
+  margin: 2rem auto;
+  background: color-mix(in oklab, var(--panel) 90%, black);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: auto auto auto 1fr auto;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #0b1228;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+button,
+input {
+  height: 2.5rem;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  color: var(--text);
+  background: #0f172a;
+}
+
+button {
+  min-width: 2.6rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+input {
+  padding: 0 0.75rem;
+  width: 100%;
+}
+
+.viewer-wrap {
+  height: min(75vh, 700px);
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.status {
+  border-bottom: 1px solid var(--panel-border);
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+}
+
+iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: white;
+}

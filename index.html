@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mini Browser</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="toolbar">
+        <button id="backBtn" title="Go back">←</button>
+        <button id="forwardBtn" title="Go forward">→</button>
+        <button id="reloadBtn" title="Reload">⟳</button>
+        <input
+          id="urlInput"
+          type="text"
+          value="https://example.com"
+          aria-label="URL"
+          placeholder="Type a URL or search term"
+        />
+        <button id="goBtn">Go</button>
+      </header>
+
+      <section class="viewer-wrap">
+        <div id="status" class="status">Ready.</div>
+        <iframe
+          id="viewer"
+          title="Browser view"
+          referrerpolicy="no-referrer"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+        ></iframe>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
