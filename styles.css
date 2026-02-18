@@ -57,11 +57,20 @@ body {
 .toolbar {
   display: grid;
   grid-template-columns: auto auto auto auto 1fr auto auto;
+  grid-template-areas: 'newtab back forward reload url go menu';
   gap: 0.5rem;
   padding: 0.75rem;
   background: #0b1228;
   border-bottom: 1px solid var(--panel-border);
 }
+
+#newTabBtn { grid-area: newtab; }
+#backBtn { grid-area: back; }
+#forwardBtn { grid-area: forward; }
+#reloadBtn { grid-area: reload; }
+#urlInput { grid-area: url; min-width: 0; }
+#goBtn { grid-area: go; }
+.menu-wrap { grid-area: menu; position: relative; }
 
 button, input, select, textarea {
   border-radius: 10px;
@@ -75,12 +84,11 @@ button:hover { border-color: var(--accent); }
 input, select, textarea { padding: 0 0.75rem; width: 100%; }
 textarea { height: auto; padding: 0.65rem 0.75rem; resize: vertical; }
 
-.menu-wrap { position: relative; }
 .extensions-menu {
   position: absolute;
   right: 0;
   top: 2.8rem;
-  width: 320px;
+  width: min(320px, 92vw);
   background: #111a33;
   border: 1px solid var(--panel-border);
   border-radius: 12px;
@@ -109,3 +117,61 @@ iframe { background: white; }
 .ext-form { display: grid; gap: 0.7rem; margin-bottom: 1.25rem; }
 table { width: 100%; border-collapse: collapse; }
 th, td { border: 1px solid #334155; padding: 0.6rem; text-align: left; }
+
+@media (max-width: 900px) {
+  .app {
+    width: 100vw;
+    margin: 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  .toolbar {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-areas:
+      'newtab back forward reload menu go'
+      'url url url url url url';
+  }
+
+  #goBtn,
+  #extensionsMenuBtn,
+  #newTabBtn,
+  #backBtn,
+  #forwardBtn,
+  #reloadBtn {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .internal-page {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .toolbar {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-areas:
+      'newtab back forward reload'
+      'menu menu go go'
+      'url url url url';
+  }
+
+  .viewer-wrap {
+    height: calc(100vh - 190px);
+  }
+
+  .extensions-menu {
+    right: 0;
+    left: auto;
+  }
+
+  .quick-links button {
+    min-width: 100%;
+  }
+
+  table {
+    font-size: 0.9rem;
+  }
+}
