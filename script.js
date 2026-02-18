@@ -386,23 +386,24 @@ function navigate(nextTarget, options = { updateTab: true, forceReload: false })
   });
 }
 
-newTabBtn.addEventListener('click', () => createTab('duck://newtab'));
+newTabBtn?.addEventListener('click', () => createTab('duck://newtab'));
 
-backBtn.addEventListener('click', () => {
+backBtn?.addEventListener('click', () => {
   const tab = getActiveTab();
-  if (!tab || urlInput.value.startsWith('duck://')) return;
+  if (!tab || !urlInput || urlInput.value.startsWith('duck://')) return;
   status.textContent = 'Trying to go back...';
   tab.frame.contentWindow?.history.back();
 });
 
-forwardBtn.addEventListener('click', () => {
+forwardBtn?.addEventListener('click', () => {
   const tab = getActiveTab();
-  if (!tab || urlInput.value.startsWith('duck://')) return;
+  if (!tab || !urlInput || urlInput.value.startsWith('duck://')) return;
   status.textContent = 'Trying to go forward...';
   tab.frame.contentWindow?.history.forward();
 });
 
-reloadBtn.addEventListener('click', () => {
+reloadBtn?.addEventListener('click', () => {
+  if (!urlInput) return;
   if (urlInput.value.startsWith('duck://')) {
     navigate(urlInput.value, { updateTab: false, forceReload: false });
   } else {
@@ -410,22 +411,29 @@ reloadBtn.addEventListener('click', () => {
   }
 });
 
-goBtn.addEventListener('click', () => navigate(urlInput.value, { updateTab: true, forceReload: false }));
-urlInput.addEventListener('keydown', (event) => {
+goBtn?.addEventListener('click', () => {
+  if (!urlInput) return;
+  navigate(urlInput.value, { updateTab: true, forceReload: false });
+});
+
+urlInput?.addEventListener('keydown', (event) => {
   if (event.key === 'Enter') navigate(urlInput.value, { updateTab: true, forceReload: false });
 });
 
-extensionsMenuBtn.addEventListener('click', () => {
+extensionsMenuBtn?.addEventListener('click', () => {
   renderExtensionsMenu();
-  extensionsMenu.hidden = !extensionsMenu.hidden;
+  if (extensionsMenu) {
+    extensionsMenu.hidden = !extensionsMenu.hidden;
+  }
 });
 
 document.addEventListener('click', (event) => {
+  if (!extensionsMenu) return;
   if (!event.target.closest('.menu-wrap')) extensionsMenu.hidden = true;
 });
 
 setInterval(() => {
-  if (urlInput.value === 'duck://newtab' && !internalPage.hidden) renderNewTab();
+  if (urlInput?.value === 'duck://newtab' && !internalPage.hidden) renderNewTab();
 }, 30_000);
 
 createTab();
