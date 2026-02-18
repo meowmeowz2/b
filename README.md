@@ -2,10 +2,13 @@
 
 A tiny in-browser viewer with:
 
+- Multi-tab browsing (create/switch/close tabs)
 - URL bar + basic navigation controls
 - Internal pages:
   - `duck://newtab` (clock/date + quick links)
-  - `duck://extensions` (paste-in JavaScript extensions)
+  - `duck://extensions` (full extension manager)
+  - `duck://settings` (homepage + search settings)
+- Extensions dropdown menu (quick overview + shortcuts to manager/settings)
 - Embedded page rendering via `iframe`
 
 ## Run
@@ -23,7 +26,14 @@ At `duck://extensions`, you can save simple JavaScript extensions:
 - **Browser extensions**: run in the app context and can modify browser UI/state.
 - **Page extensions**: attempt to inject into iframe pages (works when same-origin policy allows).
 
-All extensions are stored in `localStorage`.
+The toolbar **Extensions ▾** menu gives a quick installed-extension overview without leaving your current page.
+
+## Settings
+
+At `duck://settings`, you can configure:
+
+- Homepage URL used for new tabs / empty input
+- Search URL base used when typing non-URL text
 
 ## Notes
 

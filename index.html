@@ -8,7 +8,10 @@
   </head>
   <body>
     <main class="app">
+      <section id="tabBar" class="tab-bar"></section>
+
       <header class="toolbar">
+        <button id="newTabBtn" title="New tab">＋</button>
         <button id="backBtn" title="Go back">←</button>
         <button id="forwardBtn" title="Go forward">→</button>
         <button id="reloadBtn" title="Reload">⟳</button>
@@ -20,6 +23,10 @@
           placeholder="Type a URL"
         />
         <button id="goBtn">Go</button>
+        <div class="menu-wrap">
+          <button id="extensionsMenuBtn" title="Extensions menu">Extensions ▾</button>
+          <div id="extensionsMenu" class="extensions-menu" hidden></div>
+        </div>
       </header>
 
       <section class="viewer-wrap">
