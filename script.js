@@ -1,5 +1,5 @@
-const viewer = document.getElementById('viewer');
 const internalPage = document.getElementById('internalPage');
+const webViews = document.getElementById('webViews');
 const urlInput = document.getElementById('urlInput');
 const status = document.getElementById('status');
 
@@ -62,6 +62,27 @@ function summarizeTabTitle(url) {
   }
 }
 
+function createFrameForTab(tabId) {
+  const frame = document.createElement('iframe');
+  frame.className = 'tab-frame';
+  frame.dataset.tabId = String(tabId);
+  frame.hidden = true;
+  frame.referrerPolicy = 'no-referrer';
+  frame.sandbox = 'allow-same-origin allow-scripts allow-forms allow-popups';
+
+  frame.addEventListener('load', () => {
+    const tab = tabs.find((item) => item.id === tabId);
+    if (!tab) return;
+    if (activeTabId === tabId) {
+      status.textContent = `Loaded ${tab.url}`;
+    }
+    injectPageExtensions(frame, tab.url);
+  });
+
+  webViews.append(frame);
+  return frame;
+}
+
 function renderTabBar() {
   tabBar.innerHTML = tabs
     .map(
@@ -88,23 +109,34 @@ function renderTabBar() {
   });
 }
 
+function hideAllFrames() {
+  tabs.forEach((tab) => {
+    if (tab.frame) tab.frame.hidden = true;
+  });
+}
+
 function createTab(initialUrl = null) {
   const settings = getSettings();
   const id = Date.now() + Math.random();
+  const frame = createFrameForTab(id);
   tabs.push({
     id,
     url: initialUrl || settings.homepage,
-    title: 'New Tab'
+    title: 'New Tab',
+    frame,
+    loadedUrl: null
   });
   activeTabId = id;
   renderTabBar();
-  navigate(getActiveTab().url, { updateTab: true });
+  navigate(getActiveTab().url, { updateTab: true, forceReload: false });
 }
 
 function closeTab(tabId) {
   if (tabs.length === 1) return;
   const idx = tabs.findIndex((tab) => tab.id === tabId);
   if (idx < 0) return;
+  const removed = tabs[idx];
+  removed.frame?.remove();
   const wasActive = activeTabId === tabId;
   tabs.splice(idx, 1);
   if (wasActive) activeTabId = tabs[Math.max(0, idx - 1)].id;
@@ -118,7 +150,7 @@ function switchTab(tabId) {
   activeTabId = tab.id;
   urlInput.value = tab.url;
   renderTabBar();
-  navigate(tab.url, { updateTab: false });
+  navigate(tab.url, { updateTab: false, forceReload: false });
 }
 
 function updateActiveTab(url) {
@@ -142,7 +174,7 @@ function runBrowserExtensions(context) {
   }
 }
 
-function injectPageExtensions(targetUrl) {
+function injectPageExtensions(frame, targetUrl) {
   const pageExtensions = readExtensions().filter((item) => item.type === 'page');
   if (!pageExtensions.length) return;
 
@@ -151,13 +183,15 @@ function injectPageExtensions(targetUrl) {
     .join('\n');
 
   try {
-    if (viewer.contentDocument?.documentElement) {
-      const script = viewer.contentDocument.createElement('script');
+    if (frame.contentDocument?.documentElement) {
+      const script = frame.contentDocument.createElement('script');
       script.textContent = payload;
-      viewer.contentDocument.documentElement.append(script);
+      frame.contentDocument.documentElement.append(script);
     }
   } catch {
-    status.textContent = `Loaded ${targetUrl} (page extensions blocked by cross-origin policy)`;
+    if (activeTabId === Number(frame.dataset.tabId)) {
+      status.textContent = `Loaded ${targetUrl} (page extensions blocked by cross-origin policy)`;
+    }
   }
 }
 
@@ -172,17 +206,23 @@ function normalizeInput(rawValue) {
 }
 
 function showInternalPage(html) {
-  viewer.hidden = true;
-  viewer.removeAttribute('src');
+  hideAllFrames();
+  webViews.hidden = true;
   internalPage.hidden = false;
   internalPage.innerHTML = html;
 }
 
-function showWebPage(target) {
+function showWebPage(target, tab, forceReload = false) {
   internalPage.hidden = true;
   internalPage.innerHTML = '';
-  viewer.hidden = false;
-  viewer.src = target;
+  webViews.hidden = false;
+  hideAllFrames();
+  tab.frame.hidden = false;
+
+  if (forceReload || tab.loadedUrl !== target) {
+    tab.loadedUrl = target;
+    tab.frame.src = target;
+  }
 }
 
 function renderNewTab() {
@@ -313,8 +353,11 @@ function renderExtensionsMenu() {
   });
 }
 
-function navigate(nextTarget, options = { updateTab: true }) {
+function navigate(nextTarget, options = { updateTab: true, forceReload: false }) {
   const target = normalizeInput(nextTarget);
+  const tab = getActiveTab();
+  if (!tab) return;
+
   urlInput.value = target;
   if (options.updateTab) updateActiveTab(target);
 
@@ -329,43 +372,47 @@ function navigate(nextTarget, options = { updateTab: true }) {
     renderSettingsPage();
   } else {
     status.textContent = `Loading ${target}...`;
-    showWebPage(target);
+    showWebPage(target, tab, options.forceReload);
   }
 
-  runBrowserExtensions({ navigate, urlInput, status, viewer, internalPage, tabs, activeTabId });
+  runBrowserExtensions({
+    navigate,
+    urlInput,
+    status,
+    viewer: tab.frame,
+    internalPage,
+    tabs,
+    activeTabId
+  });
 }
-
-viewer.addEventListener('load', () => {
-  status.textContent = `Loaded ${urlInput.value}`;
-  injectPageExtensions(urlInput.value);
-});
 
 newTabBtn.addEventListener('click', () => createTab('duck://newtab'));
 
 backBtn.addEventListener('click', () => {
-  if (urlInput.value.startsWith('duck://')) return;
+  const tab = getActiveTab();
+  if (!tab || urlInput.value.startsWith('duck://')) return;
   status.textContent = 'Trying to go back...';
-  viewer.contentWindow?.history.back();
+  tab.frame.contentWindow?.history.back();
 });
 
 forwardBtn.addEventListener('click', () => {
-  if (urlInput.value.startsWith('duck://')) return;
+  const tab = getActiveTab();
+  if (!tab || urlInput.value.startsWith('duck://')) return;
   status.textContent = 'Trying to go forward...';
-  viewer.contentWindow?.history.forward();
+  tab.frame.contentWindow?.history.forward();
 });
 
 reloadBtn.addEventListener('click', () => {
   if (urlInput.value.startsWith('duck://')) {
-    navigate(urlInput.value);
+    navigate(urlInput.value, { updateTab: false, forceReload: false });
   } else {
-    status.textContent = 'Reloading...';
-    viewer.contentWindow?.location.reload();
+    navigate(urlInput.value, { updateTab: false, forceReload: true });
   }
 });
 
-goBtn.addEventListener('click', () => navigate(urlInput.value));
+goBtn.addEventListener('click', () => navigate(urlInput.value, { updateTab: true, forceReload: false }));
 urlInput.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter') navigate(urlInput.value);
+  if (event.key === 'Enter') navigate(urlInput.value, { updateTab: true, forceReload: false });
 });
 
 extensionsMenuBtn.addEventListener('click', () => {

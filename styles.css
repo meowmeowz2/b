@@ -103,8 +103,9 @@ textarea { height: auto; padding: 0.65rem 0.75rem; resize: vertical; }
 
 .viewer-wrap { height: min(75vh, 700px); display: grid; grid-template-rows: auto 1fr; }
 .status { border-bottom: 1px solid var(--panel-border); color: var(--muted); font-size: 0.9rem; padding: 0.5rem 0.75rem; }
-iframe, .internal-page { width: 100%; height: 100%; border: none; }
-iframe { background: white; }
+.web-views, .tab-frame, .internal-page { width: 100%; height: 100%; border: none; }
+.web-views { position: relative; }
+.tab-frame { background: white; }
 .internal-page { padding: 2rem; overflow: auto; background: linear-gradient(180deg, #091126, #0e1831); }
 
 .newtab { text-align: center; }
